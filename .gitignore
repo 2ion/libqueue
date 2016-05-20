@@ -1,0 +1,14 @@
+*.o
+*.a
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+libqueue.so
+qlen
+qpeek
+qpoke
+qpop
+qpush
+qtest
+install_manifest.txt

@@ -11,11 +11,9 @@ stack-based API:
 * <code>push()</code> -- append data to the queue
 * <code>pop()</code> -- pop data from the queue
 * <code>peek()</code> -- retrieve data from a given stack index
-* <code>poke()</code> -- replace data at a given stack index
 
-The data itself is stored using libkyotocabinet in a gzip-compressed
-hash tree. The storage location is selected in accordance with the XDG
-Base Directory Specification and defaults to <code>$XDG\_DATA\_DIR/libqueue</code>.
+The data itself is stored using leveldb in a compressed
+hash tree. 
 
 API Overview
 ============
@@ -42,19 +40,60 @@ struct QueueData {
 */
 
 /*
-  Open a named queue. The name of the queue is being passed as a string
+  Open a named queue. Directory location is provided as string
   <id>. Queues are persistent and data stored previously will still be
   available through the name it was written to. Operations on a queue
   must conclude with a call to queue_close().
-  This function ensures that $XDG_DATA_DIR/libqueue exist. If it doesn't
+  This function ensures that ${path}/libqueue exist. If it doesn't
   and cannot be created OR not written to, this function fails.
 */
-int queue_open(struct Queue *q, const char *id);
+struct Queue *  queue_open(const char *path);
+
+
+/*
+  Same as queue_open but allow one to provde options for various settings internal 
+  to leveldb. The vararg must be terminated by a NULL to indicate end of options
+
+  options are to be provided as strings with some requiring args
+
+  available options:
+  "failIfMissing" 
+
+  if the database doesn't already exist, the database will not be created and error 
+  status is returned
+
+  "paranoidChecks"
+
+  various paranoid checks will be done with every operation 
+
+  "writeBufferSize"
+
+  must be followed by size_t value. this is the write buffer size of leveldb
+
+  "blockSize" 
+
+  must be followed by size_t value. this is the block size of leveldb
+
+  "blockRestartInterval" 
+
+  must be followed by size_t value. this is the block restart interval of leveldb
+
+  "maxOpenFiles" 
+
+  must be followed by int value. max open file handles used by leveldb
+
+  "noCompess" 
+
+  disables compression
+ */
+struct Queue *  queue_open_with_options(const char *path,..., NULL);
+
 
 /*
   Push a data object onto the queue. struct QueueData must be filled
   appropriately: d->v is a void* pointer to the data, d->vlen holds the
   data size.
+
 */
 int queue_push(struct Queue *q, struct QueueData *d);
 
@@ -65,23 +104,25 @@ int queue_push(struct Queue *q, struct QueueData *d);
 int queue_pop(struct Queue *q, struct QueueData *d);
 
 /*
-  Writes the number of queue entries to the memory pointed to by *len.
+  returns approximate leveldb size if there is at least one element ready 
+  for reading in queue, other wise returns 0
+
 */
 int queue_len(struct Queue *q, int64_t *len);
 
 /*
   Like queue_pop(), but doesn't remove the data object from the queue
-  and returns the data at queue position s. Indexing starts from zero
-  (0). s must be positive.
+  and returns the data at queue position s. Indexing is not used 
 */
 int queue_peek(struct Queue *q, int64_t s, struct QueueData *d);
 
 /*
-  Like queue_push(), but over-writes the data at queue position s. This
-  function cannot be used to append new data to the queue. Indexing
-  starts from zero. s must be positive.
-*/
+   Like queue_push(), but over-writes the data at queue position s. This
+   function cannot be used to append new data to the queue. Indexing
+   starts from zero. s must be positive.
+ */
 int queue_poke(struct Queue *q, int64_t s, struct QueueData *d);
+
 
 /*
   Closes the queue. Only AFTER this function has been called one can be
@@ -99,16 +140,12 @@ Building
 
 Dependencies:
 
-* libxdg-basedir
-* libkyotocabinet
+* libleveldb  (on ubuntu, apt get install libleveldb-dev)
 
-libqueue uses the GNU autotools for building:
+libqueue uses the cmake for building:
 
-```
-./configure --prefix=/your/prefix
-make
-make install
-```
+cmake .
+make 
 
 Usage
 =====
@@ -122,7 +159,7 @@ It's very simple: Use
 in your C program and link it with
 
 ```sh
--lqueue
+-lqueue -lleveldb
 ```
 given that libqueue was installed into the default linker search path.
 
@@ -151,27 +188,31 @@ prints the string to stdout and exists with the status code 0.
 qlen
 ----
 
-Prints the length of the queueutils' queue.
+if there are no elements, then 0 is returned, otherwise approximate length 
+from leveldb is provided
 
 qpeek
 -----
 
 Peek at elements in the queueutils' queue.
 ```sh
-qpeek <index0> [<index1>[..<indexN>]]
+qpeek <INDEX> [<index1>[..<indexN>]]</indexN>]]
 ```
-Tries to peek at all indizes listed as arguments. Skips over invalid
-indizes but fails if the queue cannot be accessed properly.
+Tries to peek at all indizes listed as arguments. Skips over invalid indizes but fails if the queue cannot be accessed properly.
 
 qpoke
 -----
 
 Replace an existing in the queue with another one.
-```sh
+
 qpoke <INDEX> <NEW VALUE>
-```
-Fails if we cannot poke the element at the specified index, or if the
-index is out of bounds.
+Fails if we cannot poke the element at the specified index, or if the index is out of bounds.
+
+</NEW></INDEX>
+
+qtest
+-----
+executes some basic tests
 
 License
 =======
