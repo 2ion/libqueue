@@ -17,8 +17,8 @@ add_library(queueStatic STATIC queue.c)
 set_target_properties(queueStatic PROPERTIES OUTPUT_NAME queue)
 
 set(MYLIB_VERSION_MAJOR 1)
-set(MYLIB_VERSION_MINOR 0)
-set(MYLIB_VERSION_PATCH 1)
+set(MYLIB_VERSION_MINOR 2)
+set(MYLIB_VERSION_PATCH 0)
 
 set(MYLIB_VERSION_STRING ${MYLIB_VERSION_MAJOR}.${MYLIB_VERSION_MINOR}.${MYLIB_VERSION_PATCH})
 
@@ -40,8 +40,20 @@ target_link_libraries(qpoke queue ${LevelDB_LIBRARIES} )
 add_executable(qlen qlen.c queueutils.c) 
 target_link_libraries(qlen queue ${LevelDB_LIBRARIES} )
 
+add_executable(qcount qcount.c queueutils.c) 
+target_link_libraries(qcount queue ${LevelDB_LIBRARIES} )
+
+add_executable(qcompact qcompact.c queueutils.c) 
+target_link_libraries(qcompact queue ${LevelDB_LIBRARIES} )
+
+add_executable(qrepair qrepair.c queueutils.c) 
+target_link_libraries(qrepair queue ${LevelDB_LIBRARIES} )
+
 add_executable(qtest qtest.c queueutils.c) 
 target_link_libraries(qtest queue ${LevelDB_LIBRARIES} )
 
 install(TARGETS queue DESTINATION "lib")
 install(FILES queue.h DESTINATION "include")
+
+add_custom_target(test qtest qtest)
+

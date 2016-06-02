@@ -24,8 +24,6 @@
 #include "queueutils.h"
 
 int main(int argc, char **argv) {
-  struct Queue *q;
-  int64_t l = 0;
   int opt = 0;
   char *cq = NULL;
 
@@ -38,19 +36,6 @@ int main(int argc, char **argv) {
         puts("Usage: qlen [-h] [-q queue-name] [--]");
         return EXIT_FAILURE;
     }
-  q = queue_open(SELECTQUEUE(cq));
-  if(0 == queue_is_opened(q)) {
-    fprintf(stderr,"Failed to open the queue:%s\n", queue_get_last_error(q));
-    closequeue(q);
-    return EXIT_FAILURE;
-  }
-  if(queue_len(q, &l) != LIBQUEUE_SUCCESS) {
-    puts("Failed to get the queue length.");
-    closequeue(q);
-    return EXIT_FAILURE;
-  }
-  printf("%lld\n", (long long)l);
-  if(cq != NULL)
-    free(cq);
-  return closequeue(q);
+  queue_repair(SELECTQUEUE(cq));
+  return EXIT_SUCCESS;
 }

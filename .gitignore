@@ -4,8 +4,11 @@ CMakeCache.txt
 CMakeFiles/
 Makefile
 cmake_install.cmake
-libqueue.so
+libqueue.so*
 qlen
+qcount
+qcompact
+qrepair
 qpeek
 qpoke
 qpop

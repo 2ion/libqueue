@@ -44,8 +44,7 @@ int main(int argc, char **argv) {
     closequeue(q);
     return EXIT_FAILURE;
   }
-  if(queue_len(q, &l) != LIBQUEUE_SUCCESS) {
-    puts("Failed to get the queue length.");
+  if(queue_count(q, &l) != LIBQUEUE_SUCCESS) {
     closequeue(q);
     return EXIT_FAILURE;
   }

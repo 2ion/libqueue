@@ -52,6 +52,12 @@ int main(int argc, char **argv) {
 		qd2.vlen= sprintf(buffer,"%d",i);
 		queue_push(q, &qd2);
 	}
+    int64_t count;
+    if (0 != queue_count(q, &count)) {
+    }
+    if (15 != count) {
+		fprintf(stderr, "ERROR: there should be 15 in the queue but got back %lld\n", (long long unsigned)count);
+    }
 	for (i = 0; i < 15; i++) {
 		queue_pop(q, &qd2);
 		int len = sprintf(buffer,"%d",i);
@@ -61,6 +67,24 @@ int main(int argc, char **argv) {
 		if (qd2.v)
 			free(qd2.v);
 	}
+	for (i = 0; i < 15; i++) {
+		qd2.v = buffer;
+		qd2.vlen= sprintf(buffer,"%d",i);
+		queue_push(q, &qd2);
+	}
+    if (0 != queue_count(q, &count)) {
+    }
+    if (15 != count) {
+		fprintf(stderr, "ERROR: there should be 15 in the queue but got back %lld\n", (long long unsigned)count);
+    }
+	for (i = 0; i < 15; i++) {
+		queue_pop(q, NULL);
+	}
+    if (0 != queue_count(q, &count)) {
+    }
+    if (0 != count) {
+		fprintf(stderr, "ERROR: there should be 0 in the queue but got back %lld\n", (long long unsigned)count);
+    }
 
 	if(queue_close(q) != 0)
 		puts("there was an error closing the queue!");

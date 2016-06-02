@@ -25,7 +25,6 @@
 
 int main(int argc, char **argv) {
   struct Queue *q;
-  int64_t l = 0;
   int opt = 0;
   char *cq = NULL;
 
@@ -40,16 +39,14 @@ int main(int argc, char **argv) {
     }
   q = queue_open(SELECTQUEUE(cq));
   if(0 == queue_is_opened(q)) {
-    fprintf(stderr,"Failed to open the queue:%s\n", queue_get_last_error(q));
+    fprintf(stderr,"Failed to open the queue:%s", queue_get_last_error(q));
     closequeue(q);
     return EXIT_FAILURE;
   }
-  if(queue_len(q, &l) != LIBQUEUE_SUCCESS) {
-    puts("Failed to get the queue length.");
+  if(queue_compact(q) != LIBQUEUE_SUCCESS) {
     closequeue(q);
     return EXIT_FAILURE;
   }
-  printf("%lld\n", (long long)l);
   if(cq != NULL)
     free(cq);
   return closequeue(q);

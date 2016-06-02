@@ -1,4 +1,4 @@
 
 queuelibtest0: queuelibtest0.c
-	gcc -o $@ $< -lqueue
+	gcc -o $@ $< -lqueue -lleveldb
 
